@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Книга заклинаний{% endblock %}
+{% block content %}
+{% comment %} Колонки с отступом сверху и снизу {% endcomment %}
+<div class="row">
+  <h1 class="text-center">Список технологий</h1>
+  {% comment %}
+    Боковой блок со списком технологий 
+    Займет всю ширину блока на мобильном
+    и 25% при размерах экрана ≥768px
+  {% endcomment %}
+  <aside class="col-12 col-md-2">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <a
+          href="https://www.python.org/downloads/release/python-376/"
+          target="_blank"
+        >
+          Python 3.7.6
+        </a>
+      </li>
+      <li class="list-group-item">
+        <a
+          href="https://docs.djangoproject.com/en/3.2/releases/2.2.9/"
+          target="_blank"
+        >
+          Django 2.2.9
+        </a>
+      </li>
+      <li class="list-group-item">
+        <a href="https://www.sqlite.org/index.html" target="_blank">SQLite</a>
+      </li>
+      <li class="list-group-item">
+        <a href="https://pypi.org/project/flake8/" target="_blank">flake8</a>
+      </li>
+      <li class="list-group-item">
+        <a href="https://html5.org" target="_blank">HTML5</a>
+      </li>
+      <li class="list-group-item">
+        <a href="https://getbootstrap.com" target="_blank">Bootstrap</a>
+      </li>
+    </ul>
+  </aside>
+  {% comment %}
+    Статья  
+    Займет всю ширину блока на мобильном
+    и 75% при размерах экрана ≥768px
+  {% endcomment %}
+  <article class="col-12 col-md-10">
+    <br>
+    <div class="row">
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/python.png' %}" height="100">
+        <p align="justify">Популярный высокоуровневый язык программирования, 
+           предназначенный для создания приложений различных типов.
+        </p>
+      </div>
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/django.png' %}" height="100">
+        <p align="justify">Бесплатный и свободный фреймворк для веб-приложений, 
+          написанный на Python. Фреймворк — это набор компонентов, которые 
+          помогают разрабатывать веб-сайты быстро и просто.
+        </p>
+      </div>
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/sqlite.jfif' %}" height="100">
+        <p align="justify">
+          Встраиваемая кроссплатформенная база данных, которая поддерживает 
+          достаточно полный набор команд SQL и доступна в исходных кодах 
+          (на языке C).
+        </p>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/flake8.png' %}" height="100">
+        <p align="justify">
+          Линтер, позволяющий просканировать код проекта и обнаружить 
+          в нём стилистические ошибки и нарушения различных конвенций кода 
+          на Python. Умеет работать не только с PEP 8, но и с другими 
+          правилами.
+        </p>
+      </div>
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/html.png' %}" height="100">
+        <p align="justify">
+          Язык гипертекстовой разметки страницы. Используется для того, 
+          чтобы дать браузеру понять, как нужно отображать загруженный сайт.
+        </p>
+      </div>
+      <div class="col-4 col-md-4 text-center">
+        <img src="{% static 'img/tech/bootstrap.jfif' %}" height="100">
+        <p align="justify">
+          Bootstrap — это открытый и бесплатный HTML, CSS и JS фреймворк, 
+          который используется веб-разработчиками для быстрой вёрстки 
+          адаптивных дизайнов сайтов и веб-приложений.
+        </p>
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}
