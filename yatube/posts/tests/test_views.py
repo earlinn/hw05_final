@@ -8,7 +8,7 @@ from django.test import Client, override_settings, TestCase
 from django.urls import reverse
 from django import forms
 
-from ..models import Comment, Group, Post, User
+from ..models import Comment, Follow, Group, Post, User
 
 TEST_USERNAME = 'test-user'
 TEST_POST_TEXT = 'Тестовый текст поста'
@@ -19,6 +19,10 @@ TEST_SECOND_GROUP_TITLE = 'Вторая тестовая группа'
 TEST_SECOND_GROUP_SLUG = 'test-slug-2'
 TEST_SECOND_GROUP_DESCRIPTION = 'Тестовое описание второй группы'
 TEST_COMMENT_TEXT = 'Тестовый текст комментария'
+TEST_FOLLOWER_USERNAME = 'test-follower-user'
+TEST_FOLLOWING_USERNAME = 'test-following-user'
+TEST_FOLLOWER_POST_TEXT = 'Тестовый текст поста Подписчика'
+TEST_FOLLOWING_POST_TEXT = 'Тестовый текст поста Автора'
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
@@ -70,6 +74,7 @@ class PostViewsTests(TestCase):
                 'posts:post_edit', kwargs={'post_id': PostViewsTests.post.id}):
                 'posts/create_post.html',
             reverse('posts:post_create'): 'posts/create_post.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         }
 
     @classmethod
@@ -136,10 +141,9 @@ class PostViewsTests(TestCase):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': TEST_USERNAME}))
-        author = response.context['author']
-        author_username = author.username
         first_post = response.context['page_obj'][0]
-        self.assertEqual(author_username, TEST_USERNAME)
+        self.assertEqual(response.context['author'].username, TEST_USERNAME)
+        self.assertFalse(response.context['following'])
         self.assertEqual(first_post.text, TEST_POST_TEXT)
         self.assertEqual(first_post.author, PostViewsTests.user)
         self.assertEqual(first_post.group, PostViewsTests.group)
@@ -276,3 +280,119 @@ class PaginatorViewsTest(TestCase):
                 self.assertEqual(
                     len(response.context['page_obj']),
                     PaginatorViewsTest.second_page_posts_count)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+class FollowViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.follower = User.objects.create_user(
+            username=TEST_FOLLOWER_USERNAME)
+        cls.following = User.objects.create_user(
+            username=TEST_FOLLOWING_USERNAME)
+        cls.follower_post = Post.objects.create(
+            text=TEST_FOLLOWER_POST_TEXT,
+            author=cls.follower,
+        )
+        cls.following_post = Post.objects.create(
+            text=TEST_FOLLOWING_POST_TEXT,
+            author=cls.following,
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
+    def setUp(self):
+        self.authorized_follower = Client()
+        self.authorized_follower.force_login(FollowViewsTest.follower)
+        self.authorized_following = Client()
+        self.authorized_following.force_login(FollowViewsTest.following)
+
+    def test_authorized_user_can_follow_and_unfollow(self):
+        """
+        Авторизованный пользователь может подписываться на других
+        пользователей и удалять их из подписок.
+        """
+        follow_count = Follow.objects.count()
+        # try to follow
+        response_follow = self.authorized_follower.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertRedirects(
+            response_follow,
+            reverse(
+                'posts:profile', kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+        self.assertTrue(
+            Follow.objects.filter(
+                user=FollowViewsTest.follower,
+                author=FollowViewsTest.following
+            ).exists()
+        )
+        response_get_following_profile = self.authorized_follower.get(
+            reverse(
+                'posts:profile',
+                kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertTrue(response_get_following_profile.context['following'])
+
+        # try to unfollow
+        response_unfollow = self.authorized_follower.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertRedirects(
+            response_unfollow,
+            reverse(
+                'posts:profile', kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertFalse(
+            Follow.objects.filter(
+                user=FollowViewsTest.follower,
+                author=FollowViewsTest.following
+            ).exists()
+        )
+        response_get_unfollowed_profile = self.authorized_follower.get(
+            reverse(
+                'posts:profile',
+                kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        self.assertFalse(response_get_unfollowed_profile.context['following'])
+
+    def test_follow_index_page_show_correct_context(self):
+        """
+        Новая запись пользователя появляется в ленте тех, кто на него подписан,
+        и не появляется в ленте тех, кто не подписан.
+        """
+        # a follower follows an author
+        Follow.objects.create(
+            user=FollowViewsTest.follower, author=FollowViewsTest.following)
+        # the follower hits the follow_index page
+        response_follower = self.authorized_follower.get(
+            reverse('posts:follow_index'))
+        # the follow_index page shows correct context to the follower
+        # (the posts of the following author)
+        first_post = response_follower.context['page_obj'][0]
+        self.assertEqual(first_post.text, TEST_FOLLOWING_POST_TEXT)
+        self.assertEqual(first_post.author, FollowViewsTest.following)
+        # the author hits the follow_index page
+        response_following = self.authorized_following.get(
+            reverse('posts:follow_index'))
+        # the follow_index page shows correct context to the author
+        # (no posts, because the author doesn't follow anyone)
+        self.assertEqual(
+            response_following.context['page_obj'].paginator.count, 0)

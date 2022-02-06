@@ -47,6 +47,7 @@ class PostURLTests(TestCase):
                 'posts:post_edit', kwargs={'post_id': PostURLTests.post.id}):
                 'posts/create_post.html',
             reverse('posts:post_create'): 'posts/create_post.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         }
 
     def setUp(self):
@@ -138,6 +139,49 @@ class PostURLTests(TestCase):
         self.assertRedirects(
             response,
             f"{reverse('users:login')}?next={post_comment_page}")
+
+    def test_follow_index_page_exists_at_desired_location_authorized(self):
+        """Страница /follow/ доступна авторизованному пользователю."""
+        response = self.authorized_client.get(
+            reverse('posts:follow_index'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_follow_index_page_redirect_anonymous_on_login_page(self):
+        """
+        Страница /follow/ перенаправит анонимного пользователя
+        на страницу логина.
+        """
+        response = self.guest_client.get(
+            reverse('posts:follow_index'), follow=True)
+        self.assertRedirects(
+            response,
+            f"{reverse('users:login')}?next={reverse('posts:follow_index')}")
+
+    def test_profile_follow_page_redirects_anonymous_on_login_page(self):
+        """
+        Страница /profile/<str:username>/follow/ перенаправит
+        анонимного пользователя на страницу логина.
+        """
+        profile_follow_page = reverse(
+            'posts:profile_follow', kwargs={'username': PostURLTests.user})
+        response = self.guest_client.get(profile_follow_page, follow=True)
+        self.assertRedirects(
+            response,
+            f"{reverse('users:login')}?next={profile_follow_page}"
+        )
+
+    def test_profile_unfollow_page_redirects_anonymous_on_login_page(self):
+        """
+        Страница /profile/<str:username>/unfollow/ перенаправит
+        анонимного пользователя на страницу логина.
+        """
+        profile_unfollow_page = reverse(
+            'posts:profile_unfollow', kwargs={'username': PostURLTests.user})
+        response = self.guest_client.get(profile_unfollow_page, follow=True)
+        self.assertRedirects(
+            response,
+            f"{reverse('users:login')}?next={profile_unfollow_page}"
+        )
 
     def test_urls_uses_correct_template(self):
         """URL-адреса используют соответствующие шаблоны."""
