@@ -13,6 +13,13 @@ TEST_USERNAME = 'test-user'
 TEST_POST_TEXT = 'Тестовый текст поста'
 TEST_POST_NEW_TEXT = 'Новый текст поста'
 TEST_COMMENT_TEXT = 'Тестовый текст комментария'
+TEST_IMAGE = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00'
+    b'\x01\x00\x00\x00\x00\x21\xf9\x04'
+    b'\x01\x0a\x00\x01\x00\x2c\x00\x00'
+    b'\x00\x00\x01\x00\x01\x00\x00\x02'
+    b'\x02\x4c\x01\x00\x3b'
+)
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
@@ -39,13 +46,7 @@ class PostFormTests(TestCase):
         затем происходит перенаправление на страницу профиля.
         """
         post_count = Post.objects.count()
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00'
-            b'\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00'
-            b'\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
+        small_gif = TEST_IMAGE
         uploaded = SimpleUploadedFile(
             name='small.gif',
             content=small_gif,
@@ -79,13 +80,7 @@ class PostFormTests(TestCase):
         self.existing_post = Post.objects.create(
             text=TEST_POST_TEXT, author=PostFormTests.user)
         post_count = Post.objects.count()
-        very_small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00'
-            b'\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00'
-            b'\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
+        very_small_gif = TEST_IMAGE
         uploaded = SimpleUploadedFile(
             name='very_small.gif',
             content=very_small_gif,
