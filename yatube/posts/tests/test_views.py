@@ -311,16 +311,18 @@ class FollowViewsTest(TestCase):
         self.authorized_following = Client()
         self.authorized_following.force_login(FollowViewsTest.following)
 
-    def test_authorized_user_can_follow_and_unfollow(self):
-        """
-        Авторизованный пользователь может подписываться на других
-        пользователей и удалять их из подписок.
-        """
+    def test_authorized_user_can_follow(self):
+        """Авторизованный пользователь может подписываться на других."""
         follow_count = Follow.objects.count()
-        # try to follow
         response_follow = self.authorized_follower.get(
             reverse(
                 'posts:profile_follow',
+                kwargs={'username': FollowViewsTest.following}
+            )
+        )
+        response_get_following_profile = self.authorized_follower.get(
+            reverse(
+                'posts:profile',
                 kwargs={'username': FollowViewsTest.following}
             )
         )
@@ -337,15 +339,13 @@ class FollowViewsTest(TestCase):
                 author=FollowViewsTest.following
             ).exists()
         )
-        response_get_following_profile = self.authorized_follower.get(
-            reverse(
-                'posts:profile',
-                kwargs={'username': FollowViewsTest.following}
-            )
-        )
         self.assertTrue(response_get_following_profile.context['following'])
 
-        # try to unfollow
+    def test_authorized_user_can_unfollow(self):
+        """Авторизованный пользователь может отписываться от других."""
+        Follow.objects.create(
+            user=FollowViewsTest.follower, author=FollowViewsTest.following)
+        follow_count = Follow.objects.count()
         response_unfollow = self.authorized_follower.get(
             reverse(
                 'posts:profile_unfollow',
@@ -358,7 +358,7 @@ class FollowViewsTest(TestCase):
                 'posts:profile', kwargs={'username': FollowViewsTest.following}
             )
         )
-        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertEqual(Follow.objects.count(), follow_count - 1)
         self.assertFalse(
             Follow.objects.filter(
                 user=FollowViewsTest.follower,
@@ -373,10 +373,9 @@ class FollowViewsTest(TestCase):
         )
         self.assertFalse(response_get_unfollowed_profile.context['following'])
 
-    def test_follow_index_page_show_correct_context(self):
+    def test_follow_index_page_shows_correct_context_to_a_follower(self):
         """
-        Новая запись пользователя появляется в ленте тех, кто на него подписан,
-        и не появляется в ленте тех, кто не подписан.
+        Новая запись пользователя появляется в ленте тех, кто на него подписан.
         """
         # a follower follows an author
         Follow.objects.create(
@@ -389,6 +388,12 @@ class FollowViewsTest(TestCase):
         first_post = response_follower.context['page_obj'][0]
         self.assertEqual(first_post.text, TEST_FOLLOWING_POST_TEXT)
         self.assertEqual(first_post.author, FollowViewsTest.following)
+
+    def test_follow_index_page_shows_correct_context_to_a_non_follower(self):
+        """
+        Новая запись пользователя не появляется в ленте тех,
+        кто на него не подписан.
+        """
         # the author hits the follow_index page
         response_following = self.authorized_following.get(
             reverse('posts:follow_index'))
