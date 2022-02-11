@@ -248,6 +248,11 @@ class PaginatorViewsTest(TestCase):
         Post.objects.bulk_create(Post(
             text=f'Тестовый пост {post}', author=cls.user, group=cls.group
         ) for post in range(cls.total_posts_count))
+        cls.paginator_pages = [
+            reverse('posts:index'),
+            reverse('posts:group_list', kwargs={'slug': TEST_GROUP_SLUG}),
+            reverse('posts:profile', kwargs={'username': TEST_USERNAME})
+        ]
 
     def setUp(self):
         self.authorized_client = Client()
@@ -255,12 +260,7 @@ class PaginatorViewsTest(TestCase):
 
     def test_first_page_contains_ten_records(self):
         """На первой странице десять постов."""
-        paginator_pages = [
-            reverse('posts:index'),
-            reverse('posts:group_list', kwargs={'slug': TEST_GROUP_SLUG}),
-            reverse('posts:profile', kwargs={'username': TEST_USERNAME})
-        ]
-        for page in paginator_pages:
+        for page in PaginatorViewsTest.paginator_pages:
             with self.subTest(page=page):
                 response = self.authorized_client.get(page)
                 self.assertEqual(
@@ -269,12 +269,7 @@ class PaginatorViewsTest(TestCase):
 
     def test_second_page_contains_three_records(self):
         """На второй странице три поста."""
-        paginator_pages = [
-            reverse('posts:index'),
-            reverse('posts:group_list', kwargs={'slug': TEST_GROUP_SLUG}),
-            reverse('posts:profile', kwargs={'username': TEST_USERNAME})
-        ]
-        for page in paginator_pages:
+        for page in PaginatorViewsTest.paginator_pages:
             with self.subTest(page=page):
                 response = self.authorized_client.get(page + '?page=2')
                 self.assertEqual(
