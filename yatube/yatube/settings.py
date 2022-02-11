@@ -29,7 +29,9 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '[::1]',
-    'testserver'
+    'testserver',
+    'http://earlinn.pythonanywhere.com/',
+    'earlinn.pythonanywhere.com/'
 ]
 
 
