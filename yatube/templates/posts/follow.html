@@ -4,7 +4,7 @@
 {% load cache %}
   <div class="container py-5">
     <h1>Избранные авторы</h1>
-    {% include 'posts/includes/switcher.html' %}
+    {% include 'posts/includes/switcher.html' with follow=True %}
     {% for post in page_obj %}
       {% include 'posts/includes/article.html' %}
       {% if post.group %}
