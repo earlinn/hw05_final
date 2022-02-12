@@ -158,12 +158,12 @@ class PostViewsTests(TestCase):
         self.assertEqual(response.context['post'].group, PostViewsTests.group)
         self.assertEqual(
             response.context['post'].image, PostViewsTests.post.image)
+        self.assertEqual(
+            response.context['post'].comments.all()[0], PostViewsTests.comment)
         self.assertIsInstance(
             response.context['form'].fields['text'],
             forms.fields.CharField
         )
-        self.assertEqual(
-            response.context['comments'][0], PostViewsTests.comment)
 
     def test_post_create_page_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
