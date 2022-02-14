@@ -1,5 +1,8 @@
 {% load static %}
-<nav class="navbar navbar-light" style="background-color: lightskyblue">
+<nav
+  class="navbar sticky navbar-light navbar-expand-lg"
+  style="background-color: lightskyblue"
+>
   <div class="container">
     <a class="navbar-brand" href="{% url 'posts:index' %}">
       <img
@@ -11,7 +14,18 @@
       >
       <span style="color:red">Ya</span>tube
     </a>
-    <ul class="nav nav-pills">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarToggler"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <ul
+      class="nav nav-pills collapse navbar-collapse justify-content-end"
+      id="navbarToggler"
+    >
     {% with request.resolver_match.view_name as view_name %}
       <li class="nav-item"> 
         <a
@@ -55,9 +69,15 @@
             Выйти
           </a>
         </li>
-        <li>
-          Пользователь: {{ user.username }}
-        <li>
+        <li class="nav-item">
+          <a
+            class="nav-link link-dark
+            {% if view_name == 'posts:profile' %}active{% endif %}" 
+            href="{% url 'posts:profile' user.username %}"
+          >
+            Пользователь: {{ user.username }}
+          </a>
+        </li>
       {% else %}
         <li class="nav-item"> 
           <a
