@@ -18,7 +18,7 @@
 
 ```
 git clone git@github.com:earlinn/hw05_final.git
-cd api_yamdb
+cd hw05_final
 ```
 
 Создать в корневой папке проекта файл с названием ".env" и следующим 
@@ -67,7 +67,7 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-Локально запустить проект:
+Локально запустить проект из папки hw05_final/yatube/:
 
 ```
 python3 manage.py runserver
@@ -83,4 +83,4 @@ python3 manage.py runserver
 
 ### Авторы
 
-[Волкова Галина Дмитриевна](https://github.com/earlinn/) и Яндекс.Практикум
+[Галина Волкова](https://github.com/earlinn/) и Яндекс.Практикум
